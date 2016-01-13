@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Atmel Studio Solution File, Format Version 11.00
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "ED5000_CT_ATmega328P_app", "ED5000_CT_ATmega328P_app\ED5000_CT_ATmega328P_app.cproj", "{69761BBA-3AA9-4246-B704-6FB8FED31FA2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|AVR = Debug|AVR
+		Release|AVR = Release|AVR
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{69761BBA-3AA9-4246-B704-6FB8FED31FA2}.Debug|AVR.ActiveCfg = Debug|AVR
+		{69761BBA-3AA9-4246-B704-6FB8FED31FA2}.Debug|AVR.Build.0 = Debug|AVR
+		{69761BBA-3AA9-4246-B704-6FB8FED31FA2}.Release|AVR.ActiveCfg = Release|AVR
+		{69761BBA-3AA9-4246-B704-6FB8FED31FA2}.Release|AVR.Build.0 = Release|AVR
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

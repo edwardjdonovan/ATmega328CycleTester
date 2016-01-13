@@ -6,5 +6,5 @@ src\ASF\common\services\clock\mega\sysclk.c
 
 src\ASF\mega\boards\stk600\rcx_x\init.c
 
-src\mega_gpio_example.c
+src\main.c
 

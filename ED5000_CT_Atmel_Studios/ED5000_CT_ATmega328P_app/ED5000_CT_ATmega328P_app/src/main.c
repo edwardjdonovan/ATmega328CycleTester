@@ -84,6 +84,7 @@
 #include "compiler.h"
 #include <avr/interrupt.h>
 #include "conf_gpio.h"
+#include "conf_clock.h"
 #include <util/delay.h>
 
 // Only use Pin Change Interrupt handler for devices supporting this.
@@ -102,48 +103,88 @@ ISR(EXAMPLE_PCINT_vect)
 
 #endif
 
+//switch states bitmasks
+enum switchStates{
+	switch1Open = 0x01,
+	switch2Open = 0x02,
+	
+	allSwitchesClosed = 0x00,
+	allSwitchesOpen = switch1Open|switch2Open,
+	};
 
 /**
  * \brief Main routine
  */
 int main(void)
-{
+{ 
 	// Variable to put switch input into
-	uint8_t switch1;
-	uint8_t switch2;
+	//uint8_t switch1Closed;
+	//uint8_t switch2Closed;
+	uint8_t error = 0;
+	uint8_t fail = 0;
 	
 	DDRB = 0x00; //initialize all pins on port B as inputs
 	DDRB |= (1<<DDB2) | (1<<DDB3); //pins 10 and 11 are set to outputs
 	
-	switch1 = PINB0;	//pin 8 is limit switch 1
-	switch2 = PINB1;	//pin 9 is limit switch 2
+	//switch1Closed = 0x01;	//pin 8 is limit switch 1
+	//switch2Closed = 0x02;	//pin 9 is limit switch 2
 	
 	PORTB |= (1<<PINB2); //initialize pin 10 as high to protract bar
 	PORTB &= ~(1<<PINB3); //initialize pin 11 as low, controls the external dry counter
 	
 	//check to see if switch 1 is closed
-	if(switch1 == 0){
-		//break out of main loop
+	if((PINB & switch1Open) == switch1Open){
+		error = 5;
+		//if switch1 is closed, continue, if its open, break out of main loop
+		fail = 1;
 	}
 	
-	while(true){
+	while(!fail){
 		
 		PORTB &= ~(1<<PINB2); //trigger bar retract
 		
 		_delay_ms(1000); //wait 1 second
 		
-		if(switch2 == 0){
+		if((PINB & switch2Open) == switch2Open){
+			error = 2;
 			//if switch2 is closed, contiue; if closed, break
 			break;
 		}
-		PORTB |= (1<<PINB2);
+		if((PINB & switch1Open) != switch1Open){
+			error = 3;
+			//if switch1 is closed, continue, if its open, break out of main loop
+			break;
+		}		
+		PORTB |= (1<<PINB2);  //allow bar to protract
+		
 		_delay_ms(1000);
 		
-		if(switch1 == 0){
-			//check state of switch1
+		if((PINB & switch1Open) == switch1Open){
+			error = 1;
+			//if switch1 is closed, continue, if its open, break out of main loop
 			break;
 		}
-		
-		PORTB = 1; //increment counter
+		if((PINB & switch2Open) != switch2Open){
+			error = 4;
+			//if switch2 is closed, contiue; if closed, break
+			break;
+		}		
+		 //increment counter
 	}
+	
+	DDRB |= (1<<DDB5); //set pin 13 to output to control LED
+	
+	//only enter this loop if there is a failure
+	while(true){
+		
+		for (uint8_t i = 0; i<error;i++)
+		{
+			PORTB |= (1<<PINB5);
+			_delay_ms(500);
+			PORTB &= ~(1<<PINB5);
+			_delay_ms(500);
+		}
+		_delay_ms(1500);
+	}
+	
 }

@@ -59,7 +59,9 @@ int retractExitBar(void){
 }
 
 void incrementCounter(uint8_t incrementValue){
-	//increment counter-falling edge
+	
+	
+	
 }
 	
 int exitDeviceCycleTest(void){

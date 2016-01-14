@@ -83,9 +83,9 @@
  */
 #include "compiler.h"
 #include <avr/interrupt.h>
-#include "conf_gpio.h"
-#include "conf_clock.h"
-#include <util/delay.h>
+//#include "conf_gpio.h"
+//#include "conf_clock.h"
+//#include <util/delay.h>
 
 // Only use Pin Change Interrupt handler for devices supporting this.
 #ifdef EXAMPLE_PCINT_vect
@@ -103,17 +103,17 @@ ISR(EXAMPLE_PCINT_vect)
 
 #endif
 
-#define retractionTimeTimerMode 800
-#define protractionTimeTimerMode 1000
+//#define retractionTimeTimerMode 800
+//#define protractionTimeTimerMode 1000
 
 //switch states bitmasks
-enum switchStates{
+/*enum switchStates{
 	switch1Open = 0x01,
 	switch2Open = 0x02,
 	
 	allSwitchesClosed = 0x00,
 	allSwitchesOpen = switch1Open|switch2Open,
-	};
+	};*/
 
 /**
  * \brief Main routine
@@ -178,7 +178,10 @@ int main(void)
 	DDRB |= (1<<DDB5); //set pin 13 to output to control LED
 	
 	//only enter this loop if there is a failure
-	while(true){
+	
+	errorHandler(error);
+	
+	/*while(true){
 		
 		for (uint8_t i = 0; i<error;i++)
 		{
@@ -188,6 +191,6 @@ int main(void)
 			_delay_ms(500);
 		}
 		_delay_ms(1500);
-	}
+	}*/
 	
 }

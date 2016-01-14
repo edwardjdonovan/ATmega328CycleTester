@@ -87,6 +87,9 @@
 //#include "conf_clock.h"
 //#include <util/delay.h>
 
+#include "exitDeviceCycleTest.h"
+#include "errorHandler.h"
+
 // Only use Pin Change Interrupt handler for devices supporting this.
 #ifdef EXAMPLE_PCINT_vect
 

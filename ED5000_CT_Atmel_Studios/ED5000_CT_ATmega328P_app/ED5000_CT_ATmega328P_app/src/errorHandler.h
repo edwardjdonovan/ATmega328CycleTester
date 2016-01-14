@@ -1,6 +1,8 @@
 #ifndef ERROR_HANDLER_H
 #define ERROR_HANDLER_H
 
+#include "conf_gpio.h"
+
 void errorHandler_init(){
 	DDRB |= (1<<DDB5); //initialize pin 13 to control LED
 }

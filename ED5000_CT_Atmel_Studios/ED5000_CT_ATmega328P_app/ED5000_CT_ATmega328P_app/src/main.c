@@ -103,6 +103,9 @@ ISR(EXAMPLE_PCINT_vect)
 
 #endif
 
+#define retractionTimeTimerMode 800
+#define protractionTimeTimerMode 1000
+
 //switch states bitmasks
 enum switchStates{
 	switch1Open = 0x01,
@@ -117,17 +120,12 @@ enum switchStates{
  */
 int main(void)
 { 
-	// Variable to put switch input into
-	//uint8_t switch1Closed;
-	//uint8_t switch2Closed;
-	uint8_t error = 0;
+
+	/*uint8_t error = 0;
 	uint8_t fail = 0;
 	
 	DDRB = 0x00; //initialize all pins on port B as inputs
 	DDRB |= (1<<DDB2) | (1<<DDB3); //pins 10 and 11 are set to outputs
-	
-	//switch1Closed = 0x01;	//pin 8 is limit switch 1
-	//switch2Closed = 0x02;	//pin 9 is limit switch 2
 	
 	PORTB |= (1<<PINB2); //initialize pin 10 as high to protract bar
 	PORTB &= ~(1<<PINB3); //initialize pin 11 as low, controls the external dry counter
@@ -143,7 +141,7 @@ int main(void)
 		
 		PORTB &= ~(1<<PINB2); //trigger bar retract
 		
-		_delay_ms(1000); //wait 1 second
+		_delay_ms(retractionTimeTimerMode); //wait 800 milliseconds
 		
 		if((PINB & switch2Open) == switch2Open){
 			error = 2;
@@ -155,9 +153,11 @@ int main(void)
 			//if switch1 is closed, continue, if its open, break out of main loop
 			break;
 		}		
+		
+		
 		PORTB |= (1<<PINB2);  //allow bar to protract
 		
-		_delay_ms(1000);
+		_delay_ms(protractionTimeTimerMode);
 		
 		if((PINB & switch1Open) == switch1Open){
 			error = 1;
@@ -170,7 +170,10 @@ int main(void)
 			break;
 		}		
 		 //increment counter
-	}
+	}*/
+	
+	uint8_t error = 0;
+	error = exitDeviceCycleTest();
 	
 	DDRB |= (1<<DDB5); //set pin 13 to output to control LED
 	

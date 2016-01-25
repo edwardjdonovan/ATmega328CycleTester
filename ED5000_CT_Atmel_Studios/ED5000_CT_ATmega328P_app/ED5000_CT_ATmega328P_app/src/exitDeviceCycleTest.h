@@ -1,3 +1,9 @@
+/*
+ * exitDeviceCycleTest.h
+ *
+ *  Author: Ed Donovan
+ */ 
+
 #ifndef ED_CylceTest_H
 #define ED_CylceTest_H
 
@@ -5,8 +11,13 @@
 #include "conf_clock.h"
 #include <util/delay.h>
 
-#define retractionTimeTimerMode 800
-#define protractionTimeTimerMode 1000
+#include "counter.h"
+#include "errorHandler.h"
+
+#define timerPosPin	
+
+#define retractionTimeTimerMode 2000
+#define protractionTimeTimerMode 2000
 
 enum switchStates{
 	switch1Open = 0x01,
@@ -19,14 +30,13 @@ enum switchStates{
 void exitDeviceCycleTest_init(void){
 	
 	DDRB = 0x00; //initialize all pins on port B as inputs
-	DDRB |= (1<<DDB2) | (1<<DDB3); //pins 10 and 11 are set to outputs
-	
-	PORTB &= ~(1<<PINB3); //initialize pin 11 as low, controls the external dry counter
-	
+	DDRB |= (1<<DDB2) ; //pins 10 is set to output
+	PORTB |= (1<<PINB0) | (1<<PINB1);  //enable internal pullups on pins 8 and 9
 	return;
 }
 	
-int protractExitBar(void){
+int protractExitBar(){
+	
 	PORTB |= (1<<PINB2);  //allow bar to protract
 		
 	_delay_ms(protractionTimeTimerMode);
@@ -42,7 +52,8 @@ int protractExitBar(void){
 	return 0;
 }
 
-int retractExitBar(void){
+int retractExitBar(){
+	
 	PORTB &= ~(1<<PINB2); //trigger bar retract
 		
 	_delay_ms(retractionTimeTimerMode); //wait 800 milliseconds
@@ -58,23 +69,41 @@ int retractExitBar(void){
 	return 0;
 }
 
-void incrementCounter(uint8_t incrementValue){
-	
-	
-	
-}
 	
 int exitDeviceCycleTest(void){
+	uint32_t counter = 0;
 	int result = 0;
 	exitDeviceCycleTest_init();
+	counter_init();
 	result = protractExitBar();
-	if(result !=0) return result;
+	if(result !=0) {
+		if (result == 1){
+			errorEEPROMWrite(counter, 5);
+			return 5;
+			 }
+		else if(result == 4) {
+			errorEEPROMWrite(counter, 6);
+			return 6;
+			}
+		else{
+			errorEEPROMWrite(counter, result);
+			return result;	//retvalue are 5 and 6 to differentiate initialization failure from bar protraction failure
+		}
+	}
+	
 	while(true){
-		retractExitBar();
-		if(result!=0) break;
-		protractExitBar();
-		if(result!=0) break;
-		incrementCounter(1);
+		result = retractExitBar();
+		if(result!=0) {
+			errorEEPROMWrite(counter, result);
+			return result;
+		}
+		result = protractExitBar();
+		if(result!=0){
+			errorEEPROMWrite(counter, result);
+			return result;
+		}
+		incrementCounter(1);	//costs 200ms
+		counter = counter+1;
 	}
 	return result;
 }

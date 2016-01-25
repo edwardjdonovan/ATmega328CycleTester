@@ -324,6 +324,15 @@
     <None Include="src\config\conf_clock.h">
       <SubType>compile</SubType>
     </None>
+    <Compile Include="src\counter.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\errorHandler.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\exitDeviceCycleTest.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\main.c">
       <SubType>compile</SubType>
     </Compile>

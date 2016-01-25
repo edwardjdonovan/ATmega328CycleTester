@@ -3,31 +3,31 @@ ED5000_CT_ATmega328P_app.elf:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .data         00000000  00800100  00800100  0000018c  2**0
+  0 .data         00000000  00800100  00800100  00000334  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  1 .text         00000138  00000000  00000000  00000054  2**1
+  1 .text         000002e0  00000000  00000000  00000054  2**1
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  2 .comment      00000030  00000000  00000000  0000018c  2**0
+  2 .comment      00000030  00000000  00000000  00000334  2**0
                   CONTENTS, READONLY
-  3 .note.gnu.avr.deviceinfo 00000040  00000000  00000000  000001bc  2**2
+  3 .note.gnu.avr.deviceinfo 00000040  00000000  00000000  00000364  2**2
                   CONTENTS, READONLY
-  4 .debug_aranges 00000028  00000000  00000000  000001fc  2**0
+  4 .debug_aranges 00000068  00000000  00000000  000003a4  2**0
                   CONTENTS, READONLY, DEBUGGING
-  5 .debug_info   0000025f  00000000  00000000  00000224  2**0
+  5 .debug_info   0000064e  00000000  00000000  0000040c  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_abbrev 00000150  00000000  00000000  00000483  2**0
+  6 .debug_abbrev 0000026d  00000000  00000000  00000a5a  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_line   00000488  00000000  00000000  000005d3  2**0
+  7 .debug_line   000006b0  00000000  00000000  00000cc7  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_frame  00000040  00000000  00000000  00000a5c  2**2
+  8 .debug_frame  000000f8  00000000  00000000  00001378  2**2
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_str    0000f240  00000000  00000000  00000a9c  2**0
+  9 .debug_str    0000f50f  00000000  00000000  00001470  2**0
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_loc    000001ed  00000000  00000000  0000fcdc  2**0
+ 10 .debug_loc    00000489  00000000  00000000  0001097f  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_ranges 00000018  00000000  00000000  0000fec9  2**0
+ 11 .debug_ranges 00000058  00000000  00000000  00010e08  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_macro  000002db  00000000  00000000  0000fee1  2**0
+ 12 .debug_macro  00000364  00000000  00000000  00010e60  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -39,7 +39,7 @@ Disassembly of section .text:
    6:	00 00       	nop
    8:	37 c0       	rjmp	.+110    	; 0x78 <__bad_interrupt>
    a:	00 00       	nop
-   c:	36 c0       	rjmp	.+108    	; 0x7a <__vector_3>
+   c:	35 c0       	rjmp	.+106    	; 0x78 <__bad_interrupt>
    e:	00 00       	nop
   10:	33 c0       	rjmp	.+102    	; 0x78 <__bad_interrupt>
   12:	00 00       	nop
@@ -93,215 +93,582 @@ Disassembly of section .text:
   6e:	d8 e0       	ldi	r29, 0x08	; 8
   70:	de bf       	out	0x3e, r29	; 62
   72:	cd bf       	out	0x3d, r28	; 61
-  74:	0c d0       	rcall	.+24     	; 0x8e <main>
-  76:	5e c0       	rjmp	.+188    	; 0x134 <_exit>
+  74:	06 d1       	rcall	.+524    	; 0x282 <main>
+  76:	32 c1       	rjmp	.+612    	; 0x2dc <_exit>
 
 00000078 <__bad_interrupt>:
   78:	c3 cf       	rjmp	.-122    	; 0x0 <__vectors>
 
-0000007a <__vector_3>:
- *
- * Create breakpoint here and then run. Press SW0 in order to test
- * this.
- */
-ISR(EXAMPLE_PCINT_vect)
-{
-  7a:	1f 92       	push	r1
-  7c:	0f 92       	push	r0
-  7e:	0f b6       	in	r0, 0x3f	; 63
-  80:	0f 92       	push	r0
-  82:	11 24       	eor	r1, r1
+0000007a <counter_init>:
+#include "conf_gpio.h"
+#include "conf_clock.h"
+#include <util/delay.h>
 
+void counter_init(void){
+	DDRB |= (1<<DDB3);
+  7a:	23 9a       	sbi	0x04, 3	; 4
+	PORTB |= (1<<PINB3); //initialize pin 11 as high (pin11 is counter)
+  7c:	2b 9a       	sbi	0x05, 3	; 5
+  7e:	08 95       	ret
+
+00000080 <incrementCounter>:
+	//PORTB &= ~(1<<PINB3); //initialize pin 11 as low, controls the external dry counter
 }
-  84:	0f 90       	pop	r0
-  86:	0f be       	out	0x3f, r0	; 63
-  88:	0f 90       	pop	r0
-  8a:	1f 90       	pop	r1
-  8c:	18 95       	reti
 
-0000008e <main>:
-	//uint8_t switch1Closed;
-	//uint8_t switch2Closed;
-	uint8_t error = 0;
-	uint8_t fail = 0;
-	
-	DDRB = 0x00; //initialize all pins on port B as inputs
-  8e:	14 b8       	out	0x04, r1	; 4
-	DDRB |= (1<<DDB2) | (1<<DDB3); //pins 10 and 11 are set to outputs
-  90:	84 b1       	in	r24, 0x04	; 4
-  92:	8c 60       	ori	r24, 0x0C	; 12
-  94:	84 b9       	out	0x04, r24	; 4
-	
-	//switch1Closed = 0x01;	//pin 8 is limit switch 1
-	//switch2Closed = 0x02;	//pin 9 is limit switch 2
-	
-	PORTB |= (1<<PINB2); //initialize pin 10 as high to protract bar
-  96:	2a 9a       	sbi	0x05, 2	; 5
-	PORTB &= ~(1<<PINB3); //initialize pin 11 as low, controls the external dry counter
-  98:	2b 98       	cbi	0x05, 3	; 5
-	
-	//check to see if switch 1 is closed
-	if((PINB & switch1Open) == switch1Open){
-  9a:	18 99       	sbic	0x03, 0	; 3
-  9c:	1e c0       	rjmp	.+60     	; 0xda <main+0x4c>
-		fail = 1;
-	}
-	
-	while(!fail){
-		
-		PORTB &= ~(1<<PINB2); //trigger bar retract
-  9e:	2a 98       	cbi	0x05, 2	; 5
+
+void incrementCounter(uint8_t incrementValue){
+		for(int i = 0; i < incrementValue; i++){
+  80:	90 e0       	ldi	r25, 0x00	; 0
+  82:	18 16       	cp	r1, r24
+  84:	19 06       	cpc	r1, r25
+  86:	dc f4       	brge	.+54     	; 0xbe <incrementCounter+0x3e>
+  88:	20 e0       	ldi	r18, 0x00	; 0
+  8a:	30 e0       	ldi	r19, 0x00	; 0
+		PORTB &= ~(1<<PINB3); 
+  8c:	2b 98       	cbi	0x05, 3	; 5
 	#else
 		//round up by default
 		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
 	#endif
 
 	__builtin_avr_delay_cycles(__ticks_dc);
-  a0:	2f ef       	ldi	r18, 0xFF	; 255
-  a2:	33 ed       	ldi	r19, 0xD3	; 211
-  a4:	40 e3       	ldi	r20, 0x30	; 48
-  a6:	21 50       	subi	r18, 0x01	; 1
-  a8:	30 40       	sbci	r19, 0x00	; 0
-  aa:	40 40       	sbci	r20, 0x00	; 0
-  ac:	e1 f7       	brne	.-8      	; 0xa6 <main+0x18>
-  ae:	00 c0       	rjmp	.+0      	; 0xb0 <main+0x22>
-  b0:	00 00       	nop
-		
-		_delay_ms(1000); //wait 1 second
-		
-		if((PINB & switch2Open) == switch2Open){
-  b2:	19 99       	sbic	0x03, 1	; 3
-  b4:	14 c0       	rjmp	.+40     	; 0xde <main+0x50>
-			error = 2;
-			//if switch2 is closed, contiue; if closed, break
-			break;
-		}
-		if((PINB & switch1Open) != switch1Open){
-  b6:	18 9b       	sbis	0x03, 0	; 3
-  b8:	14 c0       	rjmp	.+40     	; 0xe2 <main+0x54>
-			error = 3;
-			//if switch1 is closed, continue, if its open, break out of main loop
-			break;
-		}		
-		PORTB |= (1<<PINB2);  //allow bar to protract
-  ba:	2a 9a       	sbi	0x05, 2	; 5
-  bc:	5f ef       	ldi	r21, 0xFF	; 255
-  be:	83 ed       	ldi	r24, 0xD3	; 211
-  c0:	90 e3       	ldi	r25, 0x30	; 48
-  c2:	51 50       	subi	r21, 0x01	; 1
-  c4:	80 40       	sbci	r24, 0x00	; 0
-  c6:	90 40       	sbci	r25, 0x00	; 0
-  c8:	e1 f7       	brne	.-8      	; 0xc2 <main+0x34>
-  ca:	00 c0       	rjmp	.+0      	; 0xcc <main+0x3e>
-  cc:	00 00       	nop
-		
-		_delay_ms(1000);
-		
-		if((PINB & switch1Open) == switch1Open){
-  ce:	18 99       	sbic	0x03, 0	; 3
-  d0:	0a c0       	rjmp	.+20     	; 0xe6 <main+0x58>
-			error = 1;
-			//if switch1 is closed, continue, if its open, break out of main loop
-			break;
-		}
-		if((PINB & switch2Open) != switch2Open){
-  d2:	19 99       	sbic	0x03, 1	; 3
-  d4:	e4 cf       	rjmp	.-56     	; 0x9e <main+0x10>
-			error = 4;
-  d6:	94 e0       	ldi	r25, 0x04	; 4
-  d8:	07 c0       	rjmp	.+14     	; 0xe8 <main+0x5a>
-	PORTB |= (1<<PINB2); //initialize pin 10 as high to protract bar
-	PORTB &= ~(1<<PINB3); //initialize pin 11 as low, controls the external dry counter
-	
-	//check to see if switch 1 is closed
-	if((PINB & switch1Open) == switch1Open){
-		error = 5;
-  da:	95 e0       	ldi	r25, 0x05	; 5
-  dc:	05 c0       	rjmp	.+10     	; 0xe8 <main+0x5a>
-		PORTB &= ~(1<<PINB2); //trigger bar retract
-		
-		_delay_ms(1000); //wait 1 second
-		
-		if((PINB & switch2Open) == switch2Open){
-			error = 2;
-  de:	92 e0       	ldi	r25, 0x02	; 2
-  e0:	03 c0       	rjmp	.+6      	; 0xe8 <main+0x5a>
-			//if switch2 is closed, contiue; if closed, break
-			break;
-		}
-		if((PINB & switch1Open) != switch1Open){
-			error = 3;
-  e2:	93 e0       	ldi	r25, 0x03	; 3
-  e4:	01 c0       	rjmp	.+2      	; 0xe8 <main+0x5a>
-		PORTB |= (1<<PINB2);  //allow bar to protract
-		
-		_delay_ms(1000);
-		
-		if((PINB & switch1Open) == switch1Open){
-			error = 1;
-  e6:	91 e0       	ldi	r25, 0x01	; 1
-			break;
-		}		
-		 //increment counter
+  8e:	4f ef       	ldi	r20, 0xFF	; 255
+  90:	51 ee       	ldi	r21, 0xE1	; 225
+  92:	64 e0       	ldi	r22, 0x04	; 4
+  94:	41 50       	subi	r20, 0x01	; 1
+  96:	50 40       	sbci	r21, 0x00	; 0
+  98:	60 40       	sbci	r22, 0x00	; 0
+  9a:	e1 f7       	brne	.-8      	; 0x94 <incrementCounter+0x14>
+  9c:	00 c0       	rjmp	.+0      	; 0x9e <incrementCounter+0x1e>
+  9e:	00 00       	nop
+		_delay_ms(100);
+		PORTB |= (1<<PINB3);
+  a0:	2b 9a       	sbi	0x05, 3	; 5
+  a2:	4f ef       	ldi	r20, 0xFF	; 255
+  a4:	51 ee       	ldi	r21, 0xE1	; 225
+  a6:	64 e0       	ldi	r22, 0x04	; 4
+  a8:	41 50       	subi	r20, 0x01	; 1
+  aa:	50 40       	sbci	r21, 0x00	; 0
+  ac:	60 40       	sbci	r22, 0x00	; 0
+  ae:	e1 f7       	brne	.-8      	; 0xa8 <incrementCounter+0x28>
+  b0:	00 c0       	rjmp	.+0      	; 0xb2 <incrementCounter+0x32>
+  b2:	00 00       	nop
+	//PORTB &= ~(1<<PINB3); //initialize pin 11 as low, controls the external dry counter
+}
+
+
+void incrementCounter(uint8_t incrementValue){
+		for(int i = 0; i < incrementValue; i++){
+  b4:	2f 5f       	subi	r18, 0xFF	; 255
+  b6:	3f 4f       	sbci	r19, 0xFF	; 255
+  b8:	28 17       	cp	r18, r24
+  ba:	39 07       	cpc	r19, r25
+  bc:	39 f7       	brne	.-50     	; 0x8c <incrementCounter+0xc>
+  be:	08 95       	ret
+
+000000c0 <errorHandler_init>:
+
+#include "conf_gpio.h"
+#include <avr/eeprom.h>
+
+void errorHandler_init(){
+	DDRB |= (1<<DDB5); //initialize pin 13 to control LED
+  c0:	25 9a       	sbi	0x04, 5	; 4
+	DDRB |= (1<<DDB4); //initialize pin 12 to output, only use for debugging during development
+  c2:	24 9a       	sbi	0x04, 4	; 4
+	PORTB |= (1<<PINB4); //raise fail flag for oscilloscope trigger
+  c4:	2c 9a       	sbi	0x05, 4	; 5
+  c6:	08 95       	ret
+
+000000c8 <errorEEPROMWrite>:
+}
+
+void errorEEPROMWrite(uint32_t count ,uint8_t error){
+  c8:	cf 92       	push	r12
+  ca:	df 92       	push	r13
+  cc:	ef 92       	push	r14
+  ce:	ff 92       	push	r15
+  d0:	1f 93       	push	r17
+  d2:	cf 93       	push	r28
+  d4:	df 93       	push	r29
+  d6:	6b 01       	movw	r12, r22
+  d8:	7c 01       	movw	r14, r24
+  da:	14 2f       	mov	r17, r20
+	unsigned int init_addr = 0x0000;
+	uint8_t error_intro = 0xfc;
+	uint16_t next_addr = eeprom_read_word((uint16_t*)init_addr);
+  dc:	80 e0       	ldi	r24, 0x00	; 0
+  de:	90 e0       	ldi	r25, 0x00	; 0
+  e0:	d2 d0       	rcall	.+420    	; 0x286 <eeprom_read_word>
+	if(next_addr == 0xffff || 0x0000){
+	 next_addr = 0x0015;
 	}
+	else if(next_addr >= 0x03f0){
+  e2:	80 3f       	cpi	r24, 0xF0	; 240
+  e4:	23 e0       	ldi	r18, 0x03	; 3
+  e6:	92 07       	cpc	r25, r18
+  e8:	18 f4       	brcc	.+6      	; 0xf0 <errorEEPROMWrite+0x28>
+		next_addr = 0x0015;
+	}
+	else {
+		next_addr = next_addr + 0x0015;
+  ea:	ec 01       	movw	r28, r24
+  ec:	65 96       	adiw	r28, 0x15	; 21
+  ee:	02 c0       	rjmp	.+4      	; 0xf4 <errorEEPROMWrite+0x2c>
+	uint16_t next_addr = eeprom_read_word((uint16_t*)init_addr);
+	if(next_addr == 0xffff || 0x0000){
+	 next_addr = 0x0015;
+	}
+	else if(next_addr >= 0x03f0){
+		next_addr = 0x0015;
+  f0:	c5 e1       	ldi	r28, 0x15	; 21
+  f2:	d0 e0       	ldi	r29, 0x00	; 0
+	}
+	else {
+		next_addr = next_addr + 0x0015;
+	}
+	uint8_t err_addr = next_addr + 0x0004;
+	eeprom_write_word((uint16_t*)init_addr, next_addr);
+  f4:	be 01       	movw	r22, r28
+  f6:	80 e0       	ldi	r24, 0x00	; 0
+  f8:	90 e0       	ldi	r25, 0x00	; 0
+  fa:	dd d0       	rcall	.+442    	; 0x2b6 <eeprom_write_word>
+	eeprom_write_dword((uint32_t*)next_addr,count);
+  fc:	b7 01       	movw	r22, r14
+  fe:	a6 01       	movw	r20, r12
+ 100:	ce 01       	movw	r24, r28
+ 102:	d4 d0       	rcall	.+424    	; 0x2ac <eeprom_write_dword>
+		next_addr = 0x0015;
+	}
+	else {
+		next_addr = next_addr + 0x0015;
+	}
+	uint8_t err_addr = next_addr + 0x0004;
+ 104:	8c 2f       	mov	r24, r28
+ 106:	8c 5f       	subi	r24, 0xFC	; 252
+	eeprom_write_word((uint16_t*)init_addr, next_addr);
+	eeprom_write_dword((uint32_t*)next_addr,count);
+	eeprom_write_byte((uint8_t*)err_addr, error_intro);
+ 108:	6c ef       	ldi	r22, 0xFC	; 252
+ 10a:	90 e0       	ldi	r25, 0x00	; 0
+ 10c:	c1 d0       	rcall	.+386    	; 0x290 <eeprom_write_byte>
+	err_addr = err_addr + 1;
+ 10e:	8c 2f       	mov	r24, r28
+ 110:	8b 5f       	subi	r24, 0xFB	; 251
+	eeprom_write_byte((uint8_t*)err_addr,error);
+ 112:	61 2f       	mov	r22, r17
+ 114:	90 e0       	ldi	r25, 0x00	; 0
+ 116:	bc d0       	rcall	.+376    	; 0x290 <eeprom_write_byte>
 	
-	DDRB |= (1<<DDB5); //set pin 13 to output to control LED
-  e8:	25 9a       	sbi	0x04, 5	; 4
+}
+ 118:	df 91       	pop	r29
+ 11a:	cf 91       	pop	r28
+ 11c:	1f 91       	pop	r17
+ 11e:	ff 90       	pop	r15
+ 120:	ef 90       	pop	r14
+ 122:	df 90       	pop	r13
+ 124:	cf 90       	pop	r12
+ 126:	08 95       	ret
+
+00000128 <errorHandler>:
+
+void errorHandler(uint8_t errorCode){
+ 128:	c8 2f       	mov	r28, r24
 	
-	//only enter this loop if there is a failure
+	errorHandler_init();
+ 12a:	ca df       	rcall	.-108    	; 0xc0 <errorHandler_init>
+	
+	//loop until MCU is reset manually
 	while(true){
 		
-		for (uint8_t i = 0; i<error;i++)
-  ea:	20 e0       	ldi	r18, 0x00	; 0
-  ec:	99 23       	and	r25, r25
-  ee:	c1 f0       	breq	.+48     	; 0x120 <main+0x92>
-  f0:	82 2f       	mov	r24, r18
+		for (uint8_t i = 0; i<errorCode;i++)
+ 12c:	80 e0       	ldi	r24, 0x00	; 0
+ 12e:	cc 23       	and	r28, r28
+ 130:	c1 f0       	breq	.+48     	; 0x162 <errorHandler+0x3a>
+ 132:	98 2f       	mov	r25, r24
 		{
 			PORTB |= (1<<PINB5);
-  f2:	2d 9a       	sbi	0x05, 5	; 5
-  f4:	3f ef       	ldi	r19, 0xFF	; 255
-  f6:	49 e6       	ldi	r20, 0x69	; 105
-  f8:	58 e1       	ldi	r21, 0x18	; 24
-  fa:	31 50       	subi	r19, 0x01	; 1
-  fc:	40 40       	sbci	r20, 0x00	; 0
-  fe:	50 40       	sbci	r21, 0x00	; 0
- 100:	e1 f7       	brne	.-8      	; 0xfa <main+0x6c>
- 102:	00 c0       	rjmp	.+0      	; 0x104 <main+0x76>
- 104:	00 00       	nop
+ 134:	2d 9a       	sbi	0x05, 5	; 5
+ 136:	2f ef       	ldi	r18, 0xFF	; 255
+ 138:	39 e6       	ldi	r19, 0x69	; 105
+ 13a:	48 e1       	ldi	r20, 0x18	; 24
+ 13c:	21 50       	subi	r18, 0x01	; 1
+ 13e:	30 40       	sbci	r19, 0x00	; 0
+ 140:	40 40       	sbci	r20, 0x00	; 0
+ 142:	e1 f7       	brne	.-8      	; 0x13c <errorHandler+0x14>
+ 144:	00 c0       	rjmp	.+0      	; 0x146 <errorHandler+0x1e>
+ 146:	00 00       	nop
 			_delay_ms(500);
 			PORTB &= ~(1<<PINB5);
- 106:	2d 98       	cbi	0x05, 5	; 5
- 108:	3f ef       	ldi	r19, 0xFF	; 255
- 10a:	49 e6       	ldi	r20, 0x69	; 105
- 10c:	58 e1       	ldi	r21, 0x18	; 24
- 10e:	31 50       	subi	r19, 0x01	; 1
- 110:	40 40       	sbci	r20, 0x00	; 0
- 112:	50 40       	sbci	r21, 0x00	; 0
- 114:	e1 f7       	brne	.-8      	; 0x10e <main+0x80>
- 116:	00 c0       	rjmp	.+0      	; 0x118 <main+0x8a>
- 118:	00 00       	nop
-	DDRB |= (1<<DDB5); //set pin 13 to output to control LED
+ 148:	2d 98       	cbi	0x05, 5	; 5
+ 14a:	2f ef       	ldi	r18, 0xFF	; 255
+ 14c:	39 e6       	ldi	r19, 0x69	; 105
+ 14e:	48 e1       	ldi	r20, 0x18	; 24
+ 150:	21 50       	subi	r18, 0x01	; 1
+ 152:	30 40       	sbci	r19, 0x00	; 0
+ 154:	40 40       	sbci	r20, 0x00	; 0
+ 156:	e1 f7       	brne	.-8      	; 0x150 <errorHandler+0x28>
+ 158:	00 c0       	rjmp	.+0      	; 0x15a <errorHandler+0x32>
+ 15a:	00 00       	nop
+	errorHandler_init();
 	
-	//only enter this loop if there is a failure
+	//loop until MCU is reset manually
 	while(true){
 		
-		for (uint8_t i = 0; i<error;i++)
- 11a:	8f 5f       	subi	r24, 0xFF	; 255
- 11c:	89 13       	cpse	r24, r25
- 11e:	e9 cf       	rjmp	.-46     	; 0xf2 <main+0x64>
- 120:	8f ef       	ldi	r24, 0xFF	; 255
- 122:	3d e3       	ldi	r19, 0x3D	; 61
- 124:	49 e4       	ldi	r20, 0x49	; 73
- 126:	81 50       	subi	r24, 0x01	; 1
- 128:	30 40       	sbci	r19, 0x00	; 0
- 12a:	40 40       	sbci	r20, 0x00	; 0
- 12c:	e1 f7       	brne	.-8      	; 0x126 <main+0x98>
- 12e:	00 c0       	rjmp	.+0      	; 0x130 <main+0xa2>
- 130:	00 00       	nop
- 132:	dc cf       	rjmp	.-72     	; 0xec <main+0x5e>
+		for (uint8_t i = 0; i<errorCode;i++)
+ 15c:	9f 5f       	subi	r25, 0xFF	; 255
+ 15e:	9c 13       	cpse	r25, r28
+ 160:	e9 cf       	rjmp	.-46     	; 0x134 <errorHandler+0xc>
+ 162:	9f ef       	ldi	r25, 0xFF	; 255
+ 164:	2d e3       	ldi	r18, 0x3D	; 61
+ 166:	39 e4       	ldi	r19, 0x49	; 73
+ 168:	91 50       	subi	r25, 0x01	; 1
+ 16a:	20 40       	sbci	r18, 0x00	; 0
+ 16c:	30 40       	sbci	r19, 0x00	; 0
+ 16e:	e1 f7       	brne	.-8      	; 0x168 <errorHandler+0x40>
+ 170:	00 c0       	rjmp	.+0      	; 0x172 <errorHandler+0x4a>
+ 172:	00 00       	nop
+ 174:	dc cf       	rjmp	.-72     	; 0x12e <errorHandler+0x6>
 
-00000134 <_exit>:
- 134:	f8 94       	cli
+00000176 <exitDeviceCycleTest_init>:
+	allSwitchesOpen = switch1Open|switch2Open,
+	};
+	
+void exitDeviceCycleTest_init(void){
+	
+	DDRB = 0x00; //initialize all pins on port B as inputs
+ 176:	14 b8       	out	0x04, r1	; 4
+	DDRB |= (1<<DDB2) ; //pins 10 is set to output
+ 178:	22 9a       	sbi	0x04, 2	; 4
+	PORTB |= (1<<PINB0) | (1<<PINB1);  //enable internal pullups on pins 8 and 9
+ 17a:	85 b1       	in	r24, 0x05	; 5
+ 17c:	83 60       	ori	r24, 0x03	; 3
+ 17e:	85 b9       	out	0x05, r24	; 5
+ 180:	08 95       	ret
 
-00000136 <__stop_program>:
- 136:	ff cf       	rjmp	.-2      	; 0x136 <__stop_program>
+00000182 <protractExitBar>:
+	return;
+}
+	
+int protractExitBar(){
+	
+	PORTB |= (1<<PINB2);  //allow bar to protract
+ 182:	2a 9a       	sbi	0x05, 2	; 5
+ 184:	2f ef       	ldi	r18, 0xFF	; 255
+ 186:	87 ea       	ldi	r24, 0xA7	; 167
+ 188:	91 e6       	ldi	r25, 0x61	; 97
+ 18a:	21 50       	subi	r18, 0x01	; 1
+ 18c:	80 40       	sbci	r24, 0x00	; 0
+ 18e:	90 40       	sbci	r25, 0x00	; 0
+ 190:	e1 f7       	brne	.-8      	; 0x18a <protractExitBar+0x8>
+ 192:	00 c0       	rjmp	.+0      	; 0x194 <protractExitBar+0x12>
+ 194:	00 00       	nop
+		
+	_delay_ms(protractionTimeTimerMode);
+		
+	if((PINB & switch1Open) == switch1Open){
+ 196:	18 99       	sbic	0x03, 0	; 3
+ 198:	05 c0       	rjmp	.+10     	; 0x1a4 <protractExitBar+0x22>
+		return 1;
+		//if switch1 is closed, continue, if its open, break out of main loop
+	}
+	if((PINB & switch2Open) != switch2Open){
+ 19a:	19 9b       	sbis	0x03, 1	; 3
+ 19c:	06 c0       	rjmp	.+12     	; 0x1aa <protractExitBar+0x28>
+		return 4;
+		//if switch2 is closed, contiue; if closed, break
+	}		
+	return 0;
+ 19e:	80 e0       	ldi	r24, 0x00	; 0
+ 1a0:	90 e0       	ldi	r25, 0x00	; 0
+ 1a2:	08 95       	ret
+	PORTB |= (1<<PINB2);  //allow bar to protract
+		
+	_delay_ms(protractionTimeTimerMode);
+		
+	if((PINB & switch1Open) == switch1Open){
+		return 1;
+ 1a4:	81 e0       	ldi	r24, 0x01	; 1
+ 1a6:	90 e0       	ldi	r25, 0x00	; 0
+ 1a8:	08 95       	ret
+		//if switch1 is closed, continue, if its open, break out of main loop
+	}
+	if((PINB & switch2Open) != switch2Open){
+		return 4;
+ 1aa:	84 e0       	ldi	r24, 0x04	; 4
+ 1ac:	90 e0       	ldi	r25, 0x00	; 0
+		//if switch2 is closed, contiue; if closed, break
+	}		
+	return 0;
+}
+ 1ae:	08 95       	ret
+
+000001b0 <retractExitBar>:
+
+int retractExitBar(){
+	
+	PORTB &= ~(1<<PINB2); //trigger bar retract
+ 1b0:	2a 98       	cbi	0x05, 2	; 5
+ 1b2:	2f ef       	ldi	r18, 0xFF	; 255
+ 1b4:	87 ea       	ldi	r24, 0xA7	; 167
+ 1b6:	91 e6       	ldi	r25, 0x61	; 97
+ 1b8:	21 50       	subi	r18, 0x01	; 1
+ 1ba:	80 40       	sbci	r24, 0x00	; 0
+ 1bc:	90 40       	sbci	r25, 0x00	; 0
+ 1be:	e1 f7       	brne	.-8      	; 0x1b8 <retractExitBar+0x8>
+ 1c0:	00 c0       	rjmp	.+0      	; 0x1c2 <retractExitBar+0x12>
+ 1c2:	00 00       	nop
+		
+	_delay_ms(retractionTimeTimerMode); //wait 800 milliseconds
+		
+	if((PINB & switch2Open) == switch2Open){
+ 1c4:	19 99       	sbic	0x03, 1	; 3
+ 1c6:	05 c0       	rjmp	.+10     	; 0x1d2 <retractExitBar+0x22>
+		return 2;
+		//if switch2 is closed, contiue; if closed, break
+	}
+	if((PINB & switch1Open) != switch1Open){
+ 1c8:	18 9b       	sbis	0x03, 0	; 3
+ 1ca:	06 c0       	rjmp	.+12     	; 0x1d8 <retractExitBar+0x28>
+		return 3;
+		//if switch1 is closed, continue, if its open, break out of main loop
+	}	
+	return 0;
+ 1cc:	80 e0       	ldi	r24, 0x00	; 0
+ 1ce:	90 e0       	ldi	r25, 0x00	; 0
+ 1d0:	08 95       	ret
+	PORTB &= ~(1<<PINB2); //trigger bar retract
+		
+	_delay_ms(retractionTimeTimerMode); //wait 800 milliseconds
+		
+	if((PINB & switch2Open) == switch2Open){
+		return 2;
+ 1d2:	82 e0       	ldi	r24, 0x02	; 2
+ 1d4:	90 e0       	ldi	r25, 0x00	; 0
+ 1d6:	08 95       	ret
+		//if switch2 is closed, contiue; if closed, break
+	}
+	if((PINB & switch1Open) != switch1Open){
+		return 3;
+ 1d8:	83 e0       	ldi	r24, 0x03	; 3
+ 1da:	90 e0       	ldi	r25, 0x00	; 0
+		//if switch1 is closed, continue, if its open, break out of main loop
+	}	
+	return 0;
+}
+ 1dc:	08 95       	ret
+
+000001de <exitDeviceCycleTest>:
+
+	
+int exitDeviceCycleTest(void){
+ 1de:	cf 92       	push	r12
+ 1e0:	df 92       	push	r13
+ 1e2:	ef 92       	push	r14
+ 1e4:	ff 92       	push	r15
+ 1e6:	cf 93       	push	r28
+ 1e8:	df 93       	push	r29
+	uint32_t counter = 0;
+	int result = 0;
+	exitDeviceCycleTest_init();
+ 1ea:	c5 df       	rcall	.-118    	; 0x176 <exitDeviceCycleTest_init>
+	counter_init();
+ 1ec:	46 df       	rcall	.-372    	; 0x7a <counter_init>
+	result = protractExitBar();
+ 1ee:	c9 df       	rcall	.-110    	; 0x182 <protractExitBar>
+ 1f0:	ec 01       	movw	r28, r24
+	if(result !=0) {
+ 1f2:	00 97       	sbiw	r24, 0x00	; 0
+ 1f4:	f1 f0       	breq	.+60     	; 0x232 <exitDeviceCycleTest+0x54>
+		if (result == 1){
+ 1f6:	81 30       	cpi	r24, 0x01	; 1
+ 1f8:	91 05       	cpc	r25, r1
+ 1fa:	41 f4       	brne	.+16     	; 0x20c <exitDeviceCycleTest+0x2e>
+			errorEEPROMWrite(counter, 5);
+ 1fc:	45 e0       	ldi	r20, 0x05	; 5
+ 1fe:	60 e0       	ldi	r22, 0x00	; 0
+ 200:	70 e0       	ldi	r23, 0x00	; 0
+ 202:	cb 01       	movw	r24, r22
+ 204:	61 df       	rcall	.-318    	; 0xc8 <errorEEPROMWrite>
+			return 5;
+ 206:	85 e0       	ldi	r24, 0x05	; 5
+ 208:	90 e0       	ldi	r25, 0x00	; 0
+ 20a:	34 c0       	rjmp	.+104    	; 0x274 <exitDeviceCycleTest+0x96>
+			 }
+		else if(result == 4) {
+ 20c:	84 30       	cpi	r24, 0x04	; 4
+ 20e:	91 05       	cpc	r25, r1
+ 210:	41 f4       	brne	.+16     	; 0x222 <exitDeviceCycleTest+0x44>
+			errorEEPROMWrite(counter, 6);
+ 212:	46 e0       	ldi	r20, 0x06	; 6
+ 214:	60 e0       	ldi	r22, 0x00	; 0
+ 216:	70 e0       	ldi	r23, 0x00	; 0
+ 218:	cb 01       	movw	r24, r22
+ 21a:	56 df       	rcall	.-340    	; 0xc8 <errorEEPROMWrite>
+			return 6;
+ 21c:	86 e0       	ldi	r24, 0x06	; 6
+ 21e:	90 e0       	ldi	r25, 0x00	; 0
+ 220:	29 c0       	rjmp	.+82     	; 0x274 <exitDeviceCycleTest+0x96>
+			}
+		else{
+			errorEEPROMWrite(counter, result);
+ 222:	48 2f       	mov	r20, r24
+ 224:	60 e0       	ldi	r22, 0x00	; 0
+ 226:	70 e0       	ldi	r23, 0x00	; 0
+ 228:	cb 01       	movw	r24, r22
+ 22a:	4e df       	rcall	.-356    	; 0xc8 <errorEEPROMWrite>
+			return result;	//retvalue are 5 and 6 to differentiate initialization failure from bar protraction failure
+ 22c:	8c 2f       	mov	r24, r28
+ 22e:	9d 2f       	mov	r25, r29
+ 230:	21 c0       	rjmp	.+66     	; 0x274 <exitDeviceCycleTest+0x96>
+ 232:	c1 2c       	mov	r12, r1
+ 234:	d1 2c       	mov	r13, r1
+ 236:	76 01       	movw	r14, r12
+		}
+	}
+	
+	while(true){
+		result = retractExitBar();
+ 238:	bb df       	rcall	.-138    	; 0x1b0 <retractExitBar>
+ 23a:	ec 01       	movw	r28, r24
+		if(result!=0) {
+ 23c:	00 97       	sbiw	r24, 0x00	; 0
+ 23e:	39 f0       	breq	.+14     	; 0x24e <exitDeviceCycleTest+0x70>
+			errorEEPROMWrite(counter, result);
+ 240:	48 2f       	mov	r20, r24
+ 242:	c7 01       	movw	r24, r14
+ 244:	b6 01       	movw	r22, r12
+ 246:	40 df       	rcall	.-384    	; 0xc8 <errorEEPROMWrite>
+			return result;	//retvalue are 5 and 6 to differentiate initialization failure from bar protraction failure
+		}
+	}
+	
+	while(true){
+		result = retractExitBar();
+ 248:	8c 2f       	mov	r24, r28
+ 24a:	9d 2f       	mov	r25, r29
+		if(result!=0) {
+			errorEEPROMWrite(counter, result);
+			return result;
+ 24c:	13 c0       	rjmp	.+38     	; 0x274 <exitDeviceCycleTest+0x96>
+		}
+		result = protractExitBar();
+ 24e:	99 df       	rcall	.-206    	; 0x182 <protractExitBar>
+ 250:	ec 01       	movw	r28, r24
+		if(result!=0){
+ 252:	00 97       	sbiw	r24, 0x00	; 0
+ 254:	39 f0       	breq	.+14     	; 0x264 <exitDeviceCycleTest+0x86>
+			errorEEPROMWrite(counter, result);
+ 256:	48 2f       	mov	r20, r24
+ 258:	c7 01       	movw	r24, r14
+ 25a:	b6 01       	movw	r22, r12
+ 25c:	35 df       	rcall	.-406    	; 0xc8 <errorEEPROMWrite>
+		result = retractExitBar();
+		if(result!=0) {
+			errorEEPROMWrite(counter, result);
+			return result;
+		}
+		result = protractExitBar();
+ 25e:	8c 2f       	mov	r24, r28
+ 260:	9d 2f       	mov	r25, r29
+		if(result!=0){
+			errorEEPROMWrite(counter, result);
+			return result;
+ 262:	08 c0       	rjmp	.+16     	; 0x274 <exitDeviceCycleTest+0x96>
+		}
+		incrementCounter(1);	//costs 200ms
+ 264:	81 e0       	ldi	r24, 0x01	; 1
+ 266:	0c df       	rcall	.-488    	; 0x80 <incrementCounter>
+		counter = counter+1;
+ 268:	8f ef       	ldi	r24, 0xFF	; 255
+ 26a:	c8 1a       	sub	r12, r24
+ 26c:	d8 0a       	sbc	r13, r24
+ 26e:	e8 0a       	sbc	r14, r24
+ 270:	f8 0a       	sbc	r15, r24
+	}
+ 272:	e2 cf       	rjmp	.-60     	; 0x238 <exitDeviceCycleTest+0x5a>
+	return result;
+}
+ 274:	df 91       	pop	r29
+ 276:	cf 91       	pop	r28
+ 278:	ff 90       	pop	r15
+ 27a:	ef 90       	pop	r14
+ 27c:	df 90       	pop	r13
+ 27e:	cf 90       	pop	r12
+ 280:	08 95       	ret
+
+00000282 <main>:
+ */
+int main(void)
+{ 
+	uint8_t error = 0;
+	
+	error = exitDeviceCycleTest();
+ 282:	ad df       	rcall	.-166    	; 0x1de <exitDeviceCycleTest>
+	
+	//only enter this loop if there is a failure
+	errorHandler(error);
+ 284:	51 df       	rcall	.-350    	; 0x128 <errorHandler>
+
+00000286 <eeprom_read_word>:
+ 286:	a8 e1       	ldi	r26, 0x18	; 24
+ 288:	b0 e0       	ldi	r27, 0x00	; 0
+ 28a:	42 e0       	ldi	r20, 0x02	; 2
+ 28c:	50 e0       	ldi	r21, 0x00	; 0
+ 28e:	18 c0       	rjmp	.+48     	; 0x2c0 <eeprom_read_blraw>
+
+00000290 <eeprom_write_byte>:
+ 290:	26 2f       	mov	r18, r22
+
+00000292 <eeprom_write_r18>:
+ 292:	f9 99       	sbic	0x1f, 1	; 31
+ 294:	fe cf       	rjmp	.-4      	; 0x292 <eeprom_write_r18>
+ 296:	1f ba       	out	0x1f, r1	; 31
+ 298:	92 bd       	out	0x22, r25	; 34
+ 29a:	81 bd       	out	0x21, r24	; 33
+ 29c:	20 bd       	out	0x20, r18	; 32
+ 29e:	0f b6       	in	r0, 0x3f	; 63
+ 2a0:	f8 94       	cli
+ 2a2:	fa 9a       	sbi	0x1f, 2	; 31
+ 2a4:	f9 9a       	sbi	0x1f, 1	; 31
+ 2a6:	0f be       	out	0x3f, r0	; 63
+ 2a8:	01 96       	adiw	r24, 0x01	; 1
+ 2aa:	08 95       	ret
+
+000002ac <eeprom_write_dword>:
+ 2ac:	24 2f       	mov	r18, r20
+ 2ae:	f1 df       	rcall	.-30     	; 0x292 <eeprom_write_r18>
+ 2b0:	25 2f       	mov	r18, r21
+ 2b2:	ef df       	rcall	.-34     	; 0x292 <eeprom_write_r18>
+ 2b4:	00 c0       	rjmp	.+0      	; 0x2b6 <eeprom_write_word>
+
+000002b6 <eeprom_write_word>:
+ 2b6:	ec df       	rcall	.-40     	; 0x290 <eeprom_write_byte>
+ 2b8:	27 2f       	mov	r18, r23
+ 2ba:	eb cf       	rjmp	.-42     	; 0x292 <eeprom_write_r18>
+
+000002bc <eeprom_read_block>:
+ 2bc:	dc 01       	movw	r26, r24
+ 2be:	cb 01       	movw	r24, r22
+
+000002c0 <eeprom_read_blraw>:
+ 2c0:	fc 01       	movw	r30, r24
+ 2c2:	f9 99       	sbic	0x1f, 1	; 31
+ 2c4:	fe cf       	rjmp	.-4      	; 0x2c2 <eeprom_read_blraw+0x2>
+ 2c6:	06 c0       	rjmp	.+12     	; 0x2d4 <eeprom_read_blraw+0x14>
+ 2c8:	f2 bd       	out	0x22, r31	; 34
+ 2ca:	e1 bd       	out	0x21, r30	; 33
+ 2cc:	f8 9a       	sbi	0x1f, 0	; 31
+ 2ce:	31 96       	adiw	r30, 0x01	; 1
+ 2d0:	00 b4       	in	r0, 0x20	; 32
+ 2d2:	0d 92       	st	X+, r0
+ 2d4:	41 50       	subi	r20, 0x01	; 1
+ 2d6:	50 40       	sbci	r21, 0x00	; 0
+ 2d8:	b8 f7       	brcc	.-18     	; 0x2c8 <eeprom_read_blraw+0x8>
+ 2da:	08 95       	ret
+
+000002dc <_exit>:
+ 2dc:	f8 94       	cli
+
+000002de <__stop_program>:
+ 2de:	ff cf       	rjmp	.-2      	; 0x2de <__stop_program>

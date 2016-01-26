@@ -327,6 +327,9 @@
     <Compile Include="src\counter.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\debounceSwitch.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\errorHandler.h">
       <SubType>compile</SubType>
     </Compile>

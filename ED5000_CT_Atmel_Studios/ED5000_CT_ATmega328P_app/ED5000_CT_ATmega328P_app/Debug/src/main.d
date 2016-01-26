@@ -19,7 +19,7 @@ src/main.d src/main.o: ../src/main.c ../src/ASF/mega/utils/compiler.h \
  ../src/ASF/mega/utils/progmem.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\pgmspace.h \
  ../src/exitDeviceCycleTest.h ../src/config/conf_gpio.h \
- ../src/config/conf_clock.h \
+ ../src/config/conf_clock.h ../src/debounceSwitch.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\util\delay.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\util\delay_basic.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\math.h \
@@ -73,6 +73,8 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\
 ../src/config/conf_gpio.h:
 
 ../src/config/conf_clock.h:
+
+../src/debounceSwitch.h:
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\util\delay.h:
 

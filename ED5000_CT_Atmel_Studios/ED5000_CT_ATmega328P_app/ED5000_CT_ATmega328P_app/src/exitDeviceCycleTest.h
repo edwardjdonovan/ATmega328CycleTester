@@ -9,6 +9,7 @@
 
 #include "conf_gpio.h"
 #include "conf_clock.h"
+#include "debounceSwitch.h"
 #include <util/delay.h>
 
 #include "counter.h"
@@ -38,14 +39,32 @@ void exitDeviceCycleTest_init(void){
 int protractExitBar(){
 	
 	PORTB |= (1<<PINB2);  //allow bar to protract
+	
+	bool debouncedSwitch2State;
+	bool debouncedSwitch1State;	
 		
-	_delay_ms(protractionTimeTimerMode);
+	//_delay_ms(protractionTimeTimerMode);
+	
+	PORTB &= ~(1<<PINB2);
+	
+	for (int i = 0; i < 30; i++) {
+		debouncedSwitch1State = debounceSwitch1();
+		if(debouncedSwitch1State) break;
+	}
 		
-	if((PINB & switch1Open) == switch1Open){
+	//if((PINB & switch1Open) == switch1Open){
+	if(!debouncedSwitch1State){
 		return 1;
 		//if switch1 is closed, continue, if its open, break out of main loop
 	}
-	if((PINB & switch2Open) != switch2Open){
+	
+	for (int h = 0; h < 30; h++) {
+		debouncedSwitch2State = debounceSwitch2();
+		if(debouncedSwitch2State) break;
+		}
+	
+	//if((PINB & switch2Open) != switch2Open){
+	if(debouncedSwitch2State){
 		return 4;
 		//if switch2 is closed, contiue; if closed, break
 	}		
@@ -55,14 +74,22 @@ int protractExitBar(){
 int retractExitBar(){
 	
 	PORTB &= ~(1<<PINB2); //trigger bar retract
+	bool debouncedSwitch2State; 
+	bool debouncedSwitch1State;
 		
-	_delay_ms(retractionTimeTimerMode); //wait 800 milliseconds
+	//_delay_ms(retractionTimeTimerMode); //wait 2000 milliseconds
+	
+	for (int j = 0; j < 10; j++) debouncedSwitch2State = debounceSwitch2();	
 		
-	if((PINB & switch2Open) == switch2Open){
+	//if((PINB & switch2Open) == switch2Open){
+	if(!debouncedSwitch2State){
 		return 2;
 		//if switch2 is closed, contiue; if closed, break
 	}
-	if((PINB & switch1Open) != switch1Open){
+	for (int k = 0; k < 10; k++) debouncedSwitch1State = debounceSwitch1();
+	
+	//if((PINB & switch1Open) != switch1Open){
+	if(debouncedSwitch1State){
 		return 3;
 		//if switch1 is closed, continue, if its open, break out of main loop
 	}	

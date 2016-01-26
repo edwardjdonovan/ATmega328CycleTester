@@ -20,6 +20,8 @@
 #define retractionTimeTimerMode 2000
 #define protractionTimeTimerMode 2000
 
+#define minAssertTimeMS 500
+
 enum switchStates{
 	switch1Open = 0x01,
 	switch2Open = 0x02,
@@ -33,37 +35,38 @@ void exitDeviceCycleTest_init(void){
 	DDRB = 0x00; //initialize all pins on port B as inputs
 	DDRB |= (1<<DDB2) ; //pins 10 is set to output
 	PORTB |= (1<<PINB0) | (1<<PINB1);  //enable internal pullups on pins 8 and 9
+	PORTB |= (1<<PINB2);  //allow bar to protract
 	return;
 }
+
+void assertRetraction(void){
+	PORTB &= ~(1<<PINB2); //assert bar retract
+	_delay_ms(minAssertTime);
+	PORTB |= (1<<PINB2); //allow bar protract
+}
 	
-int protractExitBar(){
-	
-	PORTB |= (1<<PINB2);  //allow bar to protract
+int checkProtractExitBar(){
 	
 	bool debouncedSwitch2State;
 	bool debouncedSwitch1State;	
-		
-	//_delay_ms(protractionTimeTimerMode);
 	
-	PORTB &= ~(1<<PINB2);
-	
-	for (int i = 0; i < 30; i++) {
+	for (int i = 0; i < 1000; i++) {
 		debouncedSwitch1State = debounceSwitch1();
 		if(debouncedSwitch1State) break;
 	}
 		
-	//if((PINB & switch1Open) == switch1Open){
+
 	if(!debouncedSwitch1State){
 		return 1;
 		//if switch1 is closed, continue, if its open, break out of main loop
 	}
 	
-	for (int h = 0; h < 30; h++) {
+	for (int h = 0; h < 100; h++) {
 		debouncedSwitch2State = debounceSwitch2();
 		if(debouncedSwitch2State) break;
 		}
 	
-	//if((PINB & switch2Open) != switch2Open){
+
 	if(debouncedSwitch2State){
 		return 4;
 		//if switch2 is closed, contiue; if closed, break
@@ -71,24 +74,32 @@ int protractExitBar(){
 	return 0;
 }
 
-int retractExitBar(){
+int checkRetractExitBar(){
 	
-	PORTB &= ~(1<<PINB2); //trigger bar retract
+	//new code
+	
 	bool debouncedSwitch2State; 
 	bool debouncedSwitch1State;
-		
-	//_delay_ms(retractionTimeTimerMode); //wait 2000 milliseconds
+
 	
-	for (int j = 0; j < 10; j++) debouncedSwitch2State = debounceSwitch2();	
-		
-	//if((PINB & switch2Open) == switch2Open){
+	for (int j = 0; j < 1000; j++){ 
+		debouncedSwitch2State = debounceSwitch2()
+		if(debouncedSwitch2State) break;
+		_delay_ms(1);
+	}	
+
 	if(!debouncedSwitch2State){
 		return 2;
 		//if switch2 is closed, contiue; if closed, break
 	}
-	for (int k = 0; k < 10; k++) debouncedSwitch1State = debounceSwitch1();
+
 	
-	//if((PINB & switch1Open) != switch1Open){
+	for (int k = 0; k < 100; k++) {
+		debouncedSwitch1State = debounceSwitch1();
+		if(debouncedSwitch1State) break;
+		_delay_ms(1);
+	}
+	
 	if(debouncedSwitch1State){
 		return 3;
 		//if switch1 is closed, continue, if its open, break out of main loop
@@ -102,7 +113,8 @@ int exitDeviceCycleTest(void){
 	int result = 0;
 	exitDeviceCycleTest_init();
 	counter_init();
-	result = protractExitBar();
+	//need to protract exit bar and evaluate state
+	result = checkProtractExitBar();
 	if(result !=0) {
 		if (result == 1){
 			errorEEPROMWrite(counter, 5);
@@ -119,12 +131,20 @@ int exitDeviceCycleTest(void){
 	}
 	
 	while(true){
-		result = retractExitBar();
+
+		/*new code*/
+		assertRetraction();
+		/*end new code*/	
+	
+		result = checkRetractExitBar();
 		if(result!=0) {
 			errorEEPROMWrite(counter, result);
 			return result;
 		}
-		result = protractExitBar();
+		
+		_delay_ms(500) //needs to be at least 400mS
+		
+		result = checkProtractExitBar();
 		if(result!=0){
 			errorEEPROMWrite(counter, result);
 			return result;

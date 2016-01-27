@@ -28,12 +28,9 @@ extern rawKey2Pressed()
 	else return true;
 }
 
-//bool debouncedKey1Press = false;
-//bool debouncedKey2Press = false;
-
 bool debounceSwitch1()
 {
-	static uint16_t State = 0;
+	static uint16_t State = 0xe001;
 	State = (State<<1)| !rawKey1Pressed() | 0xe000;
 	if(State == 0xf000) return true;
 	return false;
@@ -41,7 +38,7 @@ bool debounceSwitch1()
 
 bool debounceSwitch2()
 {
-	static uint16_t State = 0;
+	static uint16_t State = 0xe001;
 	State = (State<<1)|!rawKey2Pressed() | 0xe000;
 	if(State == 0xf000) return true;
 	return false;

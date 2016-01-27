@@ -41,7 +41,7 @@ void exitDeviceCycleTest_init(void){
 
 void assertRetraction(void){
 	PORTB &= ~(1<<PINB2); //assert bar retract
-	_delay_ms(minAssertTime);
+	_delay_ms(minAssertTimeMS);
 	PORTB |= (1<<PINB2); //allow bar protract
 }
 	
@@ -50,9 +50,10 @@ int checkProtractExitBar(){
 	bool debouncedSwitch2State;
 	bool debouncedSwitch1State;	
 	
-	for (int i = 0; i < 1000; i++) {
+	for (int i = 0; i < 200; i++) {
 		debouncedSwitch1State = debounceSwitch1();
 		if(debouncedSwitch1State) break;
+		_delay_ms(5);
 	}
 		
 
@@ -61,9 +62,10 @@ int checkProtractExitBar(){
 		//if switch1 is closed, continue, if its open, break out of main loop
 	}
 	
-	for (int h = 0; h < 100; h++) {
+	for (int h = 0; h < 10; h++) {
 		debouncedSwitch2State = debounceSwitch2();
 		if(debouncedSwitch2State) break;
+		_delay_ms(5);
 		}
 	
 
@@ -82,10 +84,10 @@ int checkRetractExitBar(){
 	bool debouncedSwitch1State;
 
 	
-	for (int j = 0; j < 1000; j++){ 
-		debouncedSwitch2State = debounceSwitch2()
+	for (int j = 0; j < 200; j++){ 
+		debouncedSwitch2State = debounceSwitch2();
 		if(debouncedSwitch2State) break;
-		_delay_ms(1);
+		_delay_ms(5);
 	}	
 
 	if(!debouncedSwitch2State){
@@ -94,10 +96,10 @@ int checkRetractExitBar(){
 	}
 
 	
-	for (int k = 0; k < 100; k++) {
+	for (int k = 0; k < 10; k++) {
 		debouncedSwitch1State = debounceSwitch1();
 		if(debouncedSwitch1State) break;
-		_delay_ms(1);
+		_delay_ms(5);
 	}
 	
 	if(debouncedSwitch1State){
@@ -133,7 +135,7 @@ int exitDeviceCycleTest(void){
 	while(true){
 
 		/*new code*/
-		assertRetraction();
+		//assertRetraction();
 		/*end new code*/	
 	
 		result = checkRetractExitBar();
@@ -142,7 +144,7 @@ int exitDeviceCycleTest(void){
 			return result;
 		}
 		
-		_delay_ms(500) //needs to be at least 400mS
+		_delay_ms(500); //needs to be at least 400mS
 		
 		result = checkProtractExitBar();
 		if(result!=0){
